@@ -1,0 +1,51 @@
+<h1>GoJS / Angular - Components Sample</h1>
+
+<div class="left">
+  Palette
+  <app-diagram-builder-palette
+    [nodes]="paletteNodeData"
+  >
+  </app-diagram-builder-palette>
+</div>
+
+<div class="left">
+  Diagram
+  <app-diagram-builder-pane
+    [nodes]="diagramNodeData"
+    [links]="diagramLinkData"
+    (init)="onPaneInit($event)"
+    (nodeSelected)="onNodeSelected($event)"
+  >
+  </app-diagram-builder-pane>
+</div>
+
+<div class="left">
+  Overview
+  <app-diagram-builder-overview
+    [observedDiagram]="observedDiagram"
+  >
+  </app-diagram-builder-overview>
+
+  <ng-container *ngIf="selectedNode">
+    Inspector
+    <app-diagram-node-inspector></app-diagram-node-inspector>
+  </ng-container>
+</div>
+
+<div class="clear left box">
+  <h3>Links in app data</h3>
+  <ul>
+    <li *ngFor="let ld of diagramLinkData">
+      Link Key: {{ld.key}}, To: {{ld.to}}, From: {{ ld.from }}
+    </li>
+  </ul>
+</div>
+
+<div class="left box">
+  <h3>Nodes in app data</h3>
+  <ul>
+    <li *ngFor="let nd of diagramNodeData">
+      Node Key: {{nd.key}}, Color: {{nd.color}}
+    </li>
+  </ul>
+</div>
