@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Input, Output, EventEmitter, AfterViewInit } from '@angular/core';
 import * as go from 'gojs';
 import { DataSyncService, DiagramComponent } from 'gojs-angular';
+import { DiagramBuilderService } from 'src/app/services/diagram-builder.service';
 import { DiagramSchema } from '../../declarations';
 
 const $ = go.GraphObject.make;
@@ -42,7 +43,7 @@ export class DiagramBuilderPaneComponent implements AfterViewInit {
 
   @ViewChild('diagram', { static: true }) diagramComponent!: DiagramComponent;
 
-  constructor() {
+  constructor(private diagramBuilder: DiagramBuilderService) {
     this.initDiagram = () => this.buildDiagram();
   }
 
@@ -156,9 +157,11 @@ export class DiagramBuilderPaneComponent implements AfterViewInit {
         }
     );
 
-    dia.addDiagramListener("ExternalObjectsDropped", function(e) {
-      var tb = dia.selection.first();
-      console.log(tb);
+    dia.addDiagramListener('ExternalObjectsDropped', (e) => {
+      const newNode = dia.selection.first();
+      if (newNode) {
+        this.diagramBuilder.prepareNewNode(newNode);
+      }
     });
 
     return dia;
