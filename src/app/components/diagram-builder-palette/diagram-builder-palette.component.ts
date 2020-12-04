@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
 import * as go from 'gojs';
 import { PaletteComponent } from 'gojs-angular';
-import { DiagramNodeConfigMap } from 'src/app/nodes/declarations';
+import { DiagramNodeConfigMap } from '../../nodes/declarations';
 
 const $ = go.GraphObject.make;
 

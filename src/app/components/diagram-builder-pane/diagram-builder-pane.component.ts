@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Input, Output, EventEmitter, AfterViewInit } from '@angular/core';
 import * as go from 'gojs';
 import { DataSyncService, DiagramComponent } from 'gojs-angular';
-import { DiagramBuilderService } from 'src/app/services/diagram-builder.service';
+import { DiagramBuilderService } from '../../services/diagram-builder.service';
 import { DiagramSchema } from '../../declarations';
 
 const $ = go.GraphObject.make;
