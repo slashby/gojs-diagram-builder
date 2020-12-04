@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import * as go from 'gojs';
-import { DiagramNodesService } from 'src/app/nodes/core/services/diagram-nodes.service';
-import { DiagramNodeConfigMap, extractNodeSettingsFromConfig } from 'src/app/nodes';
+import { DiagramNodesService } from '../../nodes/core/services/diagram-nodes.service';
+import { DiagramNodeConfigMap, extractNodeSettingsFromConfig } from '../../nodes';
 import {Node, DiagramSchema} from '../../declarations';
 import cloneDeep from 'lodash-es/cloneDeep';
 import merge from 'lodash-es/merge';
