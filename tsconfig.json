@@ -19,7 +19,10 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "nodes": ["app/nodes/*"]
+    }
   },
   "angularCompilerOptions": {
     "strictInjectionParameters": true,

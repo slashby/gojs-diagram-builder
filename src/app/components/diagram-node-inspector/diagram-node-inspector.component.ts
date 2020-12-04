@@ -1,4 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+import { Node } from '../../declarations';
+import cloneDeep from 'lodash-es/cloneDeep';
 
 @Component({
   selector: 'app-diagram-node-inspector',
@@ -6,11 +9,32 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
   styleUrls: ['./diagram-node-inspector.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DiagramNodeInspectorComponent implements OnInit {
+export class DiagramNodeInspectorComponent implements OnChanges {
+  @Input()
+  node!: Node;
 
-  constructor() { }
+  @Output()
+  dataUpdated = new EventEmitter<[key: string, model: any]>();
 
-  ngOnInit(): void {
+  model: any;
+
+  hasForm = false;
+
+  readonly form: FormGroup;
+
+  constructor() {
+    this.form = new FormGroup({});
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('node' in changes) {
+      const nodeData = this.node.node.data.data;
+      this.model = cloneDeep(nodeData);
+      this.hasForm = this.node.config.fieldsConfig.length > 0;
+    }
+  }
+
+  onSubmit() {
+    this.dataUpdated.emit([this.node.node.key as string, cloneDeep(this.model)]);
+  }
 }

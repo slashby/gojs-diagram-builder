@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import * as go from 'gojs';
-
-const $ = go.GraphObject.make;
+import { DiagramNodesService } from 'src/app/nodes/core/services/diagram-nodes.service';
+import { DiagramNodeConfigMap, extractNodeSettingsFromConfig } from 'src/app/nodes';
+import {Node, DiagramSchema} from '../../declarations';
+import cloneDeep from 'lodash-es/cloneDeep';
+import merge from 'lodash-es/merge';
 
 @Component({
   selector: 'app-diagram-builder',
@@ -10,36 +13,72 @@ const $ = go.GraphObject.make;
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class DiagramBuilderComponent {
-  observedDiagram: go.Diagram | null = null;
+export class DiagramBuilderComponent implements OnChanges {
+  observedDiagram!: go.Diagram;
 
-  selectedNode: go.Node | null = null;
+  selectedNode: Node | null = null;
 
-  diagramNodeData: go.ObjectData[] = [
-    { key: 'Alpha', text: 'Alpha', color: 'lightblue', arr: [1, 2] },
-    { key: 'Beta', text: 'Beta', color: 'orange', figure: 'Square' },
-    { key: 'Gamma', text: 'Gamma', color: 'lightgreen' },
-    { key: 'Delta', text: 'Delta', color: 'pink' }
-  ];
+  @Input()
+  diagramSchema!: DiagramSchema;
 
-  diagramLinkData: go.ObjectData[] = [
-    { key: -1, from: 'Alpha', to: 'Beta', fromPort: 'r', toPort: '1' },
-    { key: -2, from: 'Alpha', to: 'Gamma', fromPort: 'b', toPort: 't' },
-    { key: -3, from: 'Beta', to: 'Beta' },
-    { key: -4, from: 'Gamma', to: 'Delta', fromPort: 'r', toPort: 'l' },
-    { key: -5, from: 'Delta', to: 'Alpha', fromPort: 't', toPort: 'r' }
-  ];
+  readonly paletteNodes: string[] = ['circle', 'rectangle'];
 
-  public paletteNodeData: go.ObjectData[] = [
-    { key: 'PaletteNode1--', text: 'Node1', color: 'firebrick', figure: 'Circle' },
-    { key: 'PaletteNode2', text: 'Node2', color: 'blueviolet', figure: 'Square' }
-  ];
+  readonly nodeConfigs: DiagramNodeConfigMap;
+
+  constructor(private diagramNodesService: DiagramNodesService) {
+    this.nodeConfigs = diagramNodesService.configMap;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('diagramSchema' in changes) {
+      this.diagramSchema = this.prepareDiagramSchema(this.diagramSchema);
+    }
+  }
 
   onPaneInit(observedDiagram: go.Diagram) {
     this.observedDiagram = observedDiagram;
   }
 
-  onNodeSelected(selectedNode: go.Node | null) {
+  onNodeSelected(node: go.Node | null) {
+    let selectedNode: Node | null = null;
+    if (node) {
+      const {type} = node.data;
+      const config = this.diagramNodesService.getNodeConfig(type);
+
+      selectedNode = {
+        node,
+        config,
+      }
+    }
+
     this.selectedNode = selectedNode;
+  }
+
+  onSchemeUpdated(diagramSchema: DiagramSchema) {
+    this.diagramSchema = diagramSchema;
+  }
+
+  onNodeDataUpdated([key, data]: [string, any]) {
+    const updatedNode = this.findNodeByKey(this.diagramSchema.nodes, key);
+    if (updatedNode) {
+      updatedNode.data = data;
+    }
+  }
+
+  private findNodeByKey(nodes: go.ObjectData[], key: string) {
+    return nodes.find((node) => node.key === key);
+  }
+
+  private prepareDiagramSchema(diagramSchema: DiagramSchema) {
+    const preparedDiagramSchema = cloneDeep(diagramSchema);
+
+    preparedDiagramSchema.nodes = preparedDiagramSchema.nodes.map((node) => {
+      const {type} = node;
+      const config = this.diagramNodesService.getNodeConfig(type);
+
+      return merge(extractNodeSettingsFromConfig(config), node);
+    });
+
+    return preparedDiagramSchema;
   }
 }

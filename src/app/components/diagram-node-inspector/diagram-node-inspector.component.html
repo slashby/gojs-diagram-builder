@@ -1,1 +1,7 @@
-<p>diagram-node-inspector works!</p>
+<div>
+  Key: {{node.node.key}}
+</div>
+<form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="hasForm">
+  <formly-form [fields]="node.config.fieldsConfig" [form]="form" [model]="model"></formly-form>
+  <button type="submit" class="btn btn-default">Apply</button>
+</form>

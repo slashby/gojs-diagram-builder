@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Input, Output, EventEmitter, AfterViewInit } from '@angular/core';
 import * as go from 'gojs';
 import { DataSyncService, DiagramComponent } from 'gojs-angular';
+import { DiagramSchema } from '../../declarations';
 
 const $ = go.GraphObject.make;
 
@@ -12,10 +13,7 @@ const $ = go.GraphObject.make;
 })
 export class DiagramBuilderPaneComponent implements AfterViewInit {
   @Input()
-  nodes!: go.ObjectData[];
-
-  @Input()
-  links!: go.ObjectData[];
+  diagramSchema!: DiagramSchema;
 
   @Output()
   init = new EventEmitter<go.Diagram>();
@@ -23,11 +21,22 @@ export class DiagramBuilderPaneComponent implements AfterViewInit {
   @Output()
   nodeSelected = new EventEmitter<go.Node | null>();
 
+  @Output()
+  schemaUpdated = new EventEmitter<DiagramSchema>();
+
   readonly diagramDivClassName: string = 'myDiagramDiv';
 
   diagramModelData: go.ObjectData = { prop: 'value' };
 
   skipsDiagramUpdate = false;
+
+  get nodes() {
+    return this.diagramSchema.nodes;
+  }
+
+  get links() {
+    return this.diagramSchema.links;
+  }
 
   readonly initDiagram: () => go.Diagram;
 
@@ -124,7 +133,7 @@ export class DiagramBuilderPaneComponent implements AfterViewInit {
               textAlign: 'center',
               editable: true
             },
-            new go.Binding('text').makeTwoWay()
+            new go.Binding('text', 'title').makeTwoWay()
           ),
         ),
 
@@ -147,6 +156,11 @@ export class DiagramBuilderPaneComponent implements AfterViewInit {
         }
     );
 
+    dia.addDiagramListener("ExternalObjectsDropped", function(e) {
+      var tb = dia.selection.first();
+      console.log(tb);
+    });
+
     return dia;
   }
 
@@ -160,8 +174,15 @@ export class DiagramBuilderPaneComponent implements AfterViewInit {
     // this way, we don't log an unneeded transaction in the Diagram's undoManager history
     this.skipsDiagramUpdate = true;
 
-    // this.diagramNodeData = DataSyncService.syncNodeData(changes, this.diagramNodeData);
-    // this.diagramLinkData = DataSyncService.syncLinkData(changes, this.diagramLinkData);
+    const nodes = DataSyncService.syncNodeData(changes, this.nodes);
+    const links = DataSyncService.syncLinkData(changes, this.links);
     this.diagramModelData = DataSyncService.syncModelData(changes, this.diagramModelData);
+
+    this.diagramSchema = {
+      nodes,
+      links,
+    }
+
+    this.schemaUpdated.emit(this.diagramSchema);
   };
 }

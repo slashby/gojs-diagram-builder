@@ -12,6 +12,7 @@ import { DiagramNodeInspectorComponent } from './components/diagram-node-inspect
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
+import { NodesModule } from './nodes/nodes.module';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
     ReactiveFormsModule,
     FormlyModule.forRoot({ extras: { lazyRender: true } }),
     FormlyBootstrapModule,
+    NodesModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

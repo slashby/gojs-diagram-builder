@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, ViewChild, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
 import * as go from 'gojs';
 import { PaletteComponent } from 'gojs-angular';
+import { DiagramNodeConfigMap } from 'src/app/nodes/declarations';
 
 const $ = go.GraphObject.make;
 
@@ -10,17 +11,41 @@ const $ = go.GraphObject.make;
   styleUrls: ['./diagram-builder-palette.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DiagramBuilderPaletteComponent {
+export class DiagramBuilderPaletteComponent implements OnChanges {
   @Input()
-  nodes!: go.ObjectData[];
+  nodes!: string[];
+
+  @Input()
+  nodeConfigs!: DiagramNodeConfigMap;
 
   paletteModelData: go.ObjectData = { prop: 'val' };
+
+  paletteNodes: go.ObjectData[] = [];
 
   readonly paletteDivClassName = 'myPaletteDiv';
 
   skipsPaletteUpdate = false;
 
   @ViewChild('palette', { static: true }) paletteComponent!: PaletteComponent;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('nodes' in changes) {
+      this.paletteNodes = this.buildPaletteNodes(this.nodes, this.nodeConfigs);
+    }
+  }
+
+  private buildPaletteNodes(nodes: string[], nodeConfigs: DiagramNodeConfigMap): go.ObjectData[] {
+    return nodes.map((node) => {
+      const nodeConfig = nodeConfigs[node];
+
+      return {
+        type: nodeConfig.type,
+        title: nodeConfig.title,
+        color: nodeConfig.color,
+        figure: nodeConfig.figure,
+      };
+    });
+  }
 
   initPalette(): go.Palette {
     const palette = $(go.Palette);
@@ -59,7 +84,7 @@ export class DiagramBuilderPaletteComponent {
             textAlign: 'center',
             editable: true
           },
-          new go.Binding('text')
+          new go.Binding('text', 'title')
         )
       );
 
